@@ -1,23 +1,8 @@
-FROM golang:1.14-alpine as builder
+FROM maven
+COPY . /app/
 
-WORKDIR /build
+WORKDIR /app
 
-# Fetch dependencies.
-COPY go.mod go.sum ./
-RUN go mod download
+RUN mvn install
 
-# Copy code.
-COPY main.go ./
-
-# Build the command inside the container.
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o main ./main.go
-
-FROM scratch
-
-# Copy the binary to the production image from the builder stage.
-COPY --from=builder /build/main /main
-
-EXPOSE 9001
-
-# Entrypoint.
-ENTRYPOINT ["/main"]
+ENTRYPOINT ["mvn", "verify"]
